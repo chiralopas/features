@@ -6,7 +6,12 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCES main.cpp)
+set(SOURCES 
+	main.cpp
+	LoadShaders.h
+	LoadShaders.cpp
+	triangle.vert
+	triangle.frag)
 	
 add_executable(${PROJECT_NAME} ${SOURCES})
 
