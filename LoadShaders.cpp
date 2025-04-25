@@ -83,14 +83,13 @@ GLuint LoadShaders(ShaderInfo* shaders)
         glGetProgramInfoLog( program, len, &len, log );
         std::cerr << "Shader linking failed: " << log << std::endl;
         delete [] log;
-
-
-        for ( entry = shaders; entry->type != GL_NONE; ++entry ) {
-            glDeleteShader( entry->shader );
-            entry->shader = 0;
-        }
         
         return 0;
+    }
+
+    for (entry = shaders; entry->type != GL_NONE; ++entry) {
+        glDeleteShader(entry->shader);
+        entry->shader = 0;
     }
 
     return program;
