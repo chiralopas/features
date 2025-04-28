@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cstring>
 #include "LoadShaders.h"
 
 
@@ -34,6 +35,61 @@ void initialize()
 
     GLuint program = LoadShaders(shaders);
     glUseProgram(program);
+
+    // uniform buffer object //
+    
+    /* Initialize uniform values in uniform block "Uniforms" */
+    GLint uboSize;
+    GLuint ubo;
+    GLvoid* buffer;
+
+    /* Find the uniform buffer index for "Uniforms", and determine the block’s sizes */
+    GLuint uboIndex = glGetUniformBlockIndex(program,"Transformation");
+    glGetActiveUniformBlockiv(program, uboIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
+    
+    buffer = malloc(uboSize);
+
+    if (buffer == NULL) {
+        fprintf(stderr, "Unable to allocate buffer\n");
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        enum { Translation, Rotation, Scale, NumUniforms };
+        
+        /* values to be stored in the buffer object */
+        GLfloat translation[] = { 0.0, 0.5, 0.0 };
+        GLfloat rotation[] = { 90.0, 0.0, 0.0, 1.0 };
+        GLfloat scale = 0.5;
+
+        /* since we know the names of the uniforms in our block, make an array of those values */
+        const char* names[NumUniforms] = {
+            "translation",
+            "rotation",
+            "scale" };
+
+        /* query the necessary attributes to determine where in the buffer we should write the values */
+        GLuint indices[NumUniforms];
+        GLint size[NumUniforms];
+        GLint offset[NumUniforms];
+        GLint type[NumUniforms];
+
+        glGetUniformIndices(program, NumUniforms, names, indices);
+        glGetActiveUniformsiv(program, NumUniforms, indices, GL_UNIFORM_OFFSET, offset);
+        glGetActiveUniformsiv(program, NumUniforms, indices, GL_UNIFORM_SIZE, size);
+        glGetActiveUniformsiv(program, NumUniforms, indices, GL_UNIFORM_TYPE, type);
+
+        /* copy the uniform values into the buffer */
+        memcpy((std::byte*)buffer + offset[Translation], &translation, size[Translation] * 3*sizeof(GLfloat));
+        memcpy((std::byte*)buffer + offset[Rotation], &rotation, size[Rotation] * 4*sizeof(GLfloat));
+        memcpy((std::byte*)buffer + offset[Scale], &scale, size[Scale] * 1*sizeof(GLfloat));
+ 
+        /* create the uniform buffer object, initialize its storage, and associated it with the shader program */
+        glGenBuffers(1, &ubo);
+        glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+        glBufferData(GL_UNIFORM_BUFFER, uboSize, buffer, GL_STATIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+    }
 }
 
 // render the data
