@@ -15,9 +15,8 @@ GLuint program2;
 void initialize()
 {
 
-    GLfloat triangles[6][2] = {
-        { -0.90f, -0.90f }, {  0.85f, -0.90f }, { -0.90f,  0.85f },
-        {  0.90f, -0.85f }, {  0.90f,  0.90f }, { -0.85f,  0.90f }
+    GLfloat triangle[3][2] = {
+        { -0.90f, -0.90f }, {  0.85f, -0.90f }, { -0.90f,  0.85f }
     };
 
     glGenVertexArrays(1, VAOs);
@@ -26,7 +25,7 @@ void initialize()
     glBindVertexArray(VAOs[0]);
 
     glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangles), triangles, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -42,7 +41,7 @@ void initialize()
 
     ShaderInfo shaders2[] =
     {
-        { GL_VERTEX_SHADER, "../triangle.vert" },
+        { GL_VERTEX_SHADER, "../orange.vert" },
         { GL_FRAGMENT_SHADER, "../orange.frag" },
         { GL_NONE, NULL }
     };
@@ -50,15 +49,22 @@ void initialize()
     program2 = LoadShaders(shaders2);
 
     // uniform buffer object //
-
+    
     /* Initialize uniform values in uniform block "Uniforms" */
     GLint uboSize;
     GLuint ubo;
     GLvoid* buffer;
 
     /* Find the uniform buffer index for "Uniforms", and determine the block’s sizes */
-    GLuint uboIndex = glGetUniformBlockIndex(program1, "Transformation");
-    glGetActiveUniformBlockiv(program1, uboIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
+    GLuint uboIndex1 = glGetUniformBlockIndex(program1, "Transformation");
+    GLuint uboIndex2 = glGetUniformBlockIndex(program2, "Transformation");
+
+    GLuint bindingPoint = 0;
+    glUniformBlockBinding(program1, uboIndex1, bindingPoint);
+    glUniformBlockBinding(program2, uboIndex2, bindingPoint);
+
+    /* we need to this just to get the size to allocate bytes*/
+    glGetActiveUniformBlockiv(program1, uboIndex1, GL_UNIFORM_BLOCK_DATA_SIZE, &uboSize);
 
     buffer = malloc(uboSize);
 
@@ -69,9 +75,9 @@ void initialize()
     else
     {
         enum { Translation, Rotation, Scale, NumUniforms };
-
+        
         /* values to be stored in the buffer object */
-        GLfloat translation[] = { 0.0, 0.5, 0.0 };
+        GLfloat translation[] = { 0.5, 0.0, 0.0 };
         GLfloat rotation[] = { 90.0, 0.0, 0.0, 1.0 };
         GLfloat scale = 0.5;
 
@@ -102,7 +108,7 @@ void initialize()
         glGenBuffers(1, &ubo);
         glBindBuffer(GL_UNIFORM_BUFFER, ubo);
         glBufferData(GL_UNIFORM_BUFFER, uboSize, buffer, GL_STATIC_DRAW);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, ubo);
     }
 }
 
@@ -117,7 +123,7 @@ void render()
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glUseProgram(program2);
-    glDrawArrays(GL_TRIANGLES, 3, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 int main()

@@ -23,5 +23,8 @@ void main()
     pos *= rot;
     pos += translation;
 
+    /*create mirror image along Y-axis*/
+    pos.x = -pos.x;
+
     gl_Position = vec4(pos, 1.0);
 }
