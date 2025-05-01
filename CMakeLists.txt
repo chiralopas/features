@@ -4,7 +4,7 @@ set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 project(sandbox)
 add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 
 set(SOURCES 
 	main.cpp

@@ -23,74 +23,50 @@ static const GLchar* ReadShader( const char* filename )
 }
 
 
-GLuint LoadShaders(ShaderInfo* shaders)
+GLuint LoadShaders(ShaderInfo info)
 {
-    if ( shaders == NULL ) { return 0; }
+    GLuint shader = glCreateShader(info.type);
+    const GLchar* source = ReadShader(info.filename);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+
+    /* code to check compile error */
+    // GLint compiled;
+    // glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    // if (!compiled) 
+    // {
+    //     GLsizei len;
+    //     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
+
+    //     GLchar* log = new GLchar[len + 1];
+    //     glGetShaderInfoLog(shader, len, &len, log);
+    //     std::cerr << "Shader compilation failed: " << log << std::endl;
+    //     delete[] log;
+
+    //     return 0;
+    // }
 
     GLuint program = glCreateProgram();
+    glAttachShader(program, shader);
+    glProgramParameteri(program, GL_PROGRAM_SEPARABLE, GL_TRUE);
+    glLinkProgram(program);
 
-    ShaderInfo* entry = shaders;
-    while ( entry->type != GL_NONE ) {
-        GLuint shader = glCreateShader( entry->type );
+    /* code to check link error */
+    // GLint linked;
+    // glGetProgramiv( program, GL_LINK_STATUS, &linked );
+    // if ( !linked )
+    // {
+    //     GLsizei len;
+    //     glGetProgramiv( program, GL_INFO_LOG_LENGTH, &len );
 
-        entry->shader = shader;
-
-        const GLchar* source = ReadShader( entry->filename );
-        if ( source == NULL ) {
-            for ( entry = shaders; entry->type != GL_NONE; ++entry ) {
-                glDeleteShader( entry->shader );
-                entry->shader = 0;
-            }
-
-            return 0;
-        }
-
-        glShaderSource( shader, 1, &source, NULL );
-        delete [] source;
-
-        glCompileShader( shader );
-
-        GLint compiled;
-        glGetShaderiv( shader, GL_COMPILE_STATUS, &compiled );
-        if ( !compiled ) {
-
-            GLsizei len;
-            glGetShaderiv( shader, GL_INFO_LOG_LENGTH, &len );
-
-            GLchar* log = new GLchar[len+1];
-            glGetShaderInfoLog( shader, len, &len, log );
-            std::cerr << "Shader compilation failed: " << log << std::endl;
-            delete [] log;
-
-            return 0;
-        }
-
-        glAttachShader( program, shader );
+    //     GLchar* log = new GLchar[len+1];
+    //     glGetProgramInfoLog( program, len, &len, log );
+    //     std::cerr << "Shader linking failed: " << log << std::endl;
+    //     delete [] log;
         
-        ++entry;
-    }
+    //     return 0;
+    // }
 
-    glLinkProgram( program );
-
-    GLint linked;
-    glGetProgramiv( program, GL_LINK_STATUS, &linked );
-    if ( !linked ) {
-
-        GLsizei len;
-        glGetProgramiv( program, GL_INFO_LOG_LENGTH, &len );
-
-        GLchar* log = new GLchar[len+1];
-        glGetProgramInfoLog( program, len, &len, log );
-        std::cerr << "Shader linking failed: " << log << std::endl;
-        delete [] log;
-        
-        return 0;
-    }
-
-    for (entry = shaders; entry->type != GL_NONE; ++entry) {
-        glDeleteShader(entry->shader);
-        entry->shader = 0;
-    }
-
+    glDeleteShader(shader);
     return program;
 }

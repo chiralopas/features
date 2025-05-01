@@ -8,4 +8,4 @@ typedef struct {
     GLuint       shader;
 } ShaderInfo;
 
-GLuint LoadShaders(ShaderInfo*);
+GLuint LoadShaders(ShaderInfo);
