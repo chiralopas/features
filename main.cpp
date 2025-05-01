@@ -33,7 +33,29 @@ void initialize()
     };
 
     GLuint program = LoadShaders(shaders);
+
+    // shader subroutine setup //
+
     glUseProgram(program);
+
+    GLuint colorSelectionLoc = glGetSubroutineUniformLocation(program, GL_VERTEX_SHADER, "colorSelection");
+    if (colorSelectionLoc == GL_INVALID_INDEX) {
+        /* Error: materialShader is not an active subroutine
+        uniform in the shader */
+    }
+
+    GLuint redColorIndex = glGetSubroutineIndex(program, GL_VERTEX_SHADER, "redColor");
+    GLuint blueColorIndex = glGetSubroutineIndex(program, GL_VERTEX_SHADER, "blueColor");
+    if (redColorIndex == GL_INVALID_INDEX || blueColorIndex == GL_INVALID_INDEX) {
+        /* Error: the specified subroutines are not active in
+        the currently bound program for the GL_VERTEX_SHADER stage */
+    }
+
+    const GLuint subroutinesCount = 1;
+    GLuint indices[subroutinesCount];
+    indices[0] = blueColorIndex;
+    glUniformSubroutinesuiv(GL_VERTEX_SHADER, subroutinesCount, indices);
+
 }
 
 // render the data
