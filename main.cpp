@@ -7,6 +7,17 @@
 GLuint VAOs[1];
 GLuint Buffers[1];
 
+GLuint pack_color(short red, short green, short blue, short alpha)
+{
+    GLuint color = 0;
+    color = color | (alpha << 30);
+    color = color | (blue << 20);
+    color = color | (green << 10);
+    color = color | (red << 0);
+
+    return color;
+}
+
 // initialize the data
 void initialize()
 {
@@ -14,8 +25,15 @@ void initialize()
         {-0.5f,-0.5f}, { 0.0f, 0.5f}, { 0.5f,-0.5f}
     };
 
+    GLuint colors[] = {
+        pack_color(1, 0, 0, 1),
+        pack_color(0, 1, 0, 1),
+        pack_color(0, 0, 1, 1)
+    };
+    
+
     glGenVertexArrays(1, VAOs);
-    glGenBuffers(1, Buffers);
+    glGenBuffers(2, Buffers);
 
     glBindVertexArray(VAOs[0]);
 
@@ -25,6 +43,14 @@ void initialize()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+
+    glBindBuffer(GL_ARRAY_BUFFER, Buffers[1]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(1);
+
+    
     ShaderInfo shaders[] =
     {
         {GL_VERTEX_SHADER, "../triangle.vert"},
