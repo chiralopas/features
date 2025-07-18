@@ -7,6 +7,14 @@
 GLuint VAOs[1];
 GLuint Buffers[1];
 
+// structure for indirect command
+struct DrawArraysIndirectCommand {
+    GLuint count;        // Number of vertices to draw
+    GLuint instanceCount;// Number of instances
+    GLuint first;        // First vertex index
+    GLuint baseInstance; // for instanced rendering
+};
+
 // initialize the data
 void initialize()
 {
@@ -25,6 +33,13 @@ void initialize()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    auto command = DrawArraysIndirectCommand{ 3, 1, 0, 0 };
+
+    GLuint indirectBuffer;
+    glGenBuffers(1, &indirectBuffer);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer);
+    glBufferData(GL_DRAW_INDIRECT_BUFFER, sizeof(DrawArraysIndirectCommand), &command, GL_STATIC_DRAW);
+
     ShaderInfo shaders[] =
     {
         {GL_VERTEX_SHADER, "../triangle.vert"},
@@ -42,7 +57,7 @@ void render()
     glClear(GL_COLOR_BUFFER_BIT);
 
     glBindVertexArray(VAOs[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArraysIndirect(GL_TRIANGLES, 0);
 }
 
 int main()
