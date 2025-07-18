@@ -10,8 +10,18 @@ GLuint Buffers[1];
 // initialize the data
 void initialize()
 {
-    GLfloat triangle1[3][2] = {
-        {-0.5f,-0.5f}, { 0.0f, 0.5f}, { 0.5f,-0.5f}
+
+    float vertices[] = {
+        // Triangle
+        -0.6f, -0.2f,
+        -0.2f, -0.2f,
+        -0.4f,  0.2f,
+
+        // Quad
+         0.2f, -0.2f,
+         0.6f, -0.2f,
+         0.2f,  0.2f,
+         0.6f,  0.2f,
     };
 
     glGenVertexArrays(1, VAOs);
@@ -20,7 +30,7 @@ void initialize()
     glBindVertexArray(VAOs[0]);
 
     glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), triangle1, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -42,7 +52,11 @@ void render()
     glClear(GL_COLOR_BUFFER_BIT);
 
     glBindVertexArray(VAOs[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    GLint first[] = {0, 3}; // Starting indices for each strip
+    GLsizei count[] = {3, 4}; // Number of vertices for each strip
+    GLsizei drawCount = 2; // Number of draw calls
+    glMultiDrawArrays(GL_TRIANGLE_STRIP, first, count, drawCount);
 }
 
 int main()
