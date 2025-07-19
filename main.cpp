@@ -10,8 +10,16 @@ GLuint Buffers[1];
 // initialize the data
 void initialize()
 {
+
     GLfloat triangle1[3][2] = {
-        {-0.5f,-0.5f}, { 0.0f, 0.5f}, { 0.5f,-0.5f}
+        { -0.2f, -0.2f }, {  0.0f,  0.2f }, { 0.2f, -0.2f }
+    };
+
+    GLfloat offsets[] = {
+        -0.4f, 0.4f,
+         0.4f, 0.4f,
+        -0.4f,-0.4f,
+         0.4f,-0.4f
     };
 
     glGenVertexArrays(1, VAOs);
@@ -34,6 +42,10 @@ void initialize()
 
     GLuint program = LoadShaders(shaders);
     glUseProgram(program);
+
+    // uniform setup
+    int uOffsetsLocation = glGetUniformLocation(program,"offsets");
+    glUniform2fv(uOffsetsLocation, 4, offsets);
 }
 
 // render the data
@@ -42,7 +54,7 @@ void render()
     glClear(GL_COLOR_BUFFER_BIT);
 
     glBindVertexArray(VAOs[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArraysInstanced(GL_TRIANGLES, 0, 3, 4);
 }
 
 int main()
