@@ -33,6 +33,16 @@ void initialize()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    // instanced vertex attribute setup
+    GLuint instanceBuffer;
+    glGenBuffers(1, &instanceBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(offsets), offsets, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribDivisor(1, 1);
+
     ShaderInfo shaders[] =
     {
         {GL_VERTEX_SHADER, "../triangle.vert"},
@@ -42,10 +52,6 @@ void initialize()
 
     GLuint program = LoadShaders(shaders);
     glUseProgram(program);
-
-    // uniform setup
-    int uOffsetsLocation = glGetUniformLocation(program,"offsets");
-    glUniform2fv(uOffsetsLocation, 4, offsets);
 }
 
 // render the data
