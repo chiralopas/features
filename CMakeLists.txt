@@ -19,4 +19,5 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
+target_include_directories(${PROJECT_NAME} PRIVATE "linmath.h/linmath.h")
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad::glad)

@@ -1,8 +1,9 @@
 #version 330 core
 
-layout (location = 0) out vec4 fColor;
+out vec4 fColor;
+uniform vec3 uColor;
 
 void main()
 {
-    fColor = vec4(0.5, 0.4, 0.8, 1.0);
+    fColor = vec4(uColor, 1.0);
 }
