@@ -19,10 +19,10 @@ void initialize()
          0.5f, -0.5f,  0.0f,
          0.0f,  0.5f,  0.0f,
         // rectangle
-        -0.4f, -0.5f, -0.1f,
-        -0.4f,  0.2f, -0.1f,
-         0.4f, -0.5f, -0.1f,
-         0.4f,  0.2f, -0.1f
+        -0.4f, -0.5f, -0.0000001f,
+        -0.4f,  0.2f, -0.0000001f,
+         0.4f, -0.5f, -0.0000001f,
+         0.4f,  0.2f, -0.0000001f
     };
 
     glGenVertexArrays(1, VAOs);
@@ -63,7 +63,7 @@ void render()
     mat4x4_perspective(projection, 45.0f * (3.14159f / 180.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
     /* model transformations */
-    // mat4x4_rotate_Y(model, model, (float)glfwGetTime());
+    mat4x4_rotate_Y(model, model, (float)glfwGetTime());
 
     /* update matrices in shader */
     glUniformMatrix4fv(glGetUniformLocation(Program, "uModel"), 1, GL_FALSE, (GLfloat*)model);
