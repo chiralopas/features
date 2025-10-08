@@ -15,14 +15,19 @@ void initialize()
 {
     GLfloat vertices[] = {
         // triangle
-        -0.5f, -0.5f,  0.0f,
-         0.5f, -0.5f,  0.0f,
-         0.0f,  0.5f,  0.0f,
+        -1.0f, -0.4f,  4.0f,
+         0.0f, -0.4f,  4.0f,
+        -0.5f,  0.6f,  4.0f,
         // rectangle
-        -0.4f, -0.5f, -0.0000001f,
-        -0.4f,  0.2f, -0.0000001f,
-         0.4f, -0.5f, -0.0000001f,
-         0.4f,  0.2f, -0.0000001f
+         2.0f, -0.4f, -1.0f,
+         2.0f,  0.3f, -1.0f,
+         2.8f, -0.4f, -1.0f,
+         2.8f,  0.3f, -1.0f,
+        // plane
+        -5.0f, -0.5f, -5.0f,
+        -5.0f, -0.5f,  5.0f,
+         5.0f, -0.5f, -5.0f,
+         5.0f, -0.5f,  5.0f
     };
 
     glGenVertexArrays(1, VAOs);
@@ -63,7 +68,7 @@ void render()
     mat4x4_perspective(projection, 45.0f * (3.14159f / 180.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
     /* model transformations */
-    mat4x4_rotate_Y(model, model, (float)glfwGetTime());
+    mat4x4_translate(model, 0.0f, 0.0f, -4.0f);
 
     /* update matrices in shader */
     glUniformMatrix4fv(glGetUniformLocation(Program, "uModel"), 1, GL_FALSE, (GLfloat*)model);
@@ -71,12 +76,11 @@ void render()
     glUniformMatrix4fv(glGetUniformLocation(Program, "uProjection"), 1, GL_FALSE, (GLfloat*)projection);
 
     /* draw triangle */
-    glUniform3f(glGetUniformLocation(Program, "uColor"), 0.4f, 0.4f, 0.8f);
     glDrawArrays(GL_TRIANGLES, 0, 3);
-
     /* draw rectangle */
-    glUniform3f(glGetUniformLocation(Program, "uColor"), 0.8f, 0.4f, 0.0f);
     glDrawArrays(GL_TRIANGLE_STRIP, 3, 4);
+    /* draw plane */
+    glDrawArrays(GL_TRIANGLE_STRIP, 7, 4);
 }
 
 int main()
