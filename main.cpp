@@ -9,6 +9,7 @@ GLuint VAOs[1];
 GLuint Buffers[1];
 
 GLuint Program;
+GLuint OcclusionQuery;
 
 // initialize the data
 void initialize()
@@ -19,10 +20,10 @@ void initialize()
          0.5f, -0.5f,  0.0f,
          0.0f,  0.5f,  0.0f,
         // rectangle
-        -0.4f, -0.5f, -0.1f,
-        -0.4f,  0.2f, -0.1f,
-         0.4f, -0.5f, -0.1f,
-         0.4f,  0.2f, -0.1f
+        -0.2f, -0.5f, -0.1f,
+        -0.2f,  0.0f, -0.1f,
+         0.2f, -0.5f, -0.1f,
+         0.2f,  0.0f, -0.1f
     };
 
     glGenVertexArrays(1, VAOs);
@@ -45,6 +46,8 @@ void initialize()
 
     Program = LoadShaders(shaders);
     glUseProgram(Program);
+
+    glGenQueries(1, &OcclusionQuery);
 }
 
 // render the data
@@ -63,7 +66,7 @@ void render()
     mat4x4_perspective(projection, 45.0f * (3.14159f / 180.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
     /* model transformations */
-    // mat4x4_rotate_Y(model, model, (float)glfwGetTime());
+    mat4x4_rotate_Y(model, model, (float)glfwGetTime());
 
     /* update matrices in shader */
     glUniformMatrix4fv(glGetUniformLocation(Program, "uModel"), 1, GL_FALSE, (GLfloat*)model);
@@ -74,9 +77,40 @@ void render()
     glUniform3f(glGetUniformLocation(Program, "uColor"), 0.4f, 0.4f, 0.8f);
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    /* draw rectangle */
-    glUniform3f(glGetUniformLocation(Program, "uColor"), 0.8f, 0.4f, 0.0f);
-    glDrawArrays(GL_TRIANGLE_STRIP, 3, 4);
+    /* start occlusion query */
+    glBeginQuery(GL_SAMPLES_PASSED, OcclusionQuery);
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); glDepthMask(GL_FALSE);
+    glDrawArrays(GL_TRIANGLE_STRIP, 3, 4); // draw rectangle without affecting buffers
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); glDepthMask(GL_TRUE);
+    /* end query */
+    glEndQuery(GL_SAMPLES_PASSED);
+
+    /* get query result */
+    GLint queryReady = 0;
+    int count = 1000; // counter to avoid a possible infinite loop
+    while (!queryReady && count--){ // block application to get query from gpu
+        glGetQueryObjectiv(OcclusionQuery, GL_QUERY_RESULT_AVAILABLE, &queryReady);
+    }
+
+    GLint samples = 0;
+    if (queryReady) {
+        glGetQueryObjectiv(OcclusionQuery, GL_QUERY_RESULT, &samples);
+        std::cout << "Samples visible: " << samples;
+    }
+    else {
+        std::cout << "Query not ready, rendering anyway";
+        samples = 1; // assume visible
+    }
+
+    /* render the actual rectangle only if it passed occlusion test */
+    if (samples > 0) {
+        std::cout << " -> RENDERING rectangle" << std::endl;
+        glUniform3f(glGetUniformLocation(Program, "uColor"), 0.8f, 0.4f, 0.0f);
+        glDrawArrays(GL_TRIANGLE_STRIP, 3, 4);
+    }
+    else {
+        std::cout << " -> SKIPPING rectangle (occluded)" << std::endl;
+    }
 }
 
 int main()
