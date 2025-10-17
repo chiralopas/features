@@ -10,8 +10,19 @@ GLuint Buffers[1];
 // initialize the data
 void initialize()
 {
-    GLfloat triangle1[3][2] = {
-        {-0.5f,-0.5f}, { 0.0f, 0.5f}, { 0.5f,-0.5f}
+    GLfloat data[27][2] = {
+        // triangle
+        {-0.5f,-0.5f}, { 0.0f, 0.5f}, { 0.5f,-0.5f},
+
+        // rectangular frame
+        {-0.2f, 0.0f}, { 0.2f, 0.0f}, { 0.2f,-0.1f},
+        { 0.2f,-0.1f}, {-0.2f,-0.1f}, {-0.2f, 0.0f},
+        {-0.2f,-0.3f}, { 0.2f,-0.3f}, { 0.2f,-0.4f},
+        { 0.2f,-0.4f}, {-0.2f,-0.4f}, {-0.2f,-0.3f},
+        {-0.2f,-0.1f}, {-0.1f,-0.1f}, {-0.1f,-0.3f},
+        {-0.1f,-0.3f}, {-0.2f,-0.3f}, {-0.2f,-0.1f},
+        { 0.1f,-0.1f}, { 0.2f,-0.1f}, { 0.2f,-0.3f},
+        { 0.2f,-0.3f}, { 0.1f,-0.3f}, { 0.1f,-0.1f}
     };
 
     glGenVertexArrays(1, VAOs);
@@ -20,7 +31,7 @@ void initialize()
     glBindVertexArray(VAOs[0]);
 
     glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), triangle1, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
@@ -39,10 +50,31 @@ void initialize()
 // render the data
 void render()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
-
     glBindVertexArray(VAOs[0]);
+
+    /* enable stencil test */
+    glEnable(GL_STENCIL_TEST);
+    glClearStencil(0x00);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+    /* disable color writes */
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    /* write data into stencil buffer */
+    glStencilFunc(GL_ALWAYS, 0x01, 0x01);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    /* draw call: trigger stencil operations */
+    glDrawArrays(GL_TRIANGLES, 3, 24);
+
+    /* enable color writes */
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    /* use filled stencil buffer to discard fragments */
+    glStencilFunc(GL_EQUAL, 0x01, 0x01);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    /* draw call: trigger stencil operations */
     glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    /* disable stencil test */
+    glDisable(GL_STENCIL_TEST);
 }
 
 int main()
