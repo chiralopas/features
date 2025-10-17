@@ -57,20 +57,17 @@ void render()
     glClearStencil(0x00);
     glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    /* disable color writes */
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-    /* write data into stencil buffer */
-    glStencilFunc(GL_ALWAYS, 0x01, 0x01);
+    /* setup test action to update stencil buffer */
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    /* draw call: trigger stencil operations */
+
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glStencilFunc(GL_ALWAYS, 0x01, 0x01); // stencil test
+    glStencilMask(0x01); // enable writes for rightmost bit
     glDrawArrays(GL_TRIANGLES, 3, 24);
 
-    /* enable color writes */
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    /* use filled stencil buffer to discard fragments */
-    glStencilFunc(GL_EQUAL, 0x01, 0x01);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-    /* draw call: trigger stencil operations */
+    glStencilFunc(GL_EQUAL, 0x01, 0x01); // stencil test
+    glStencilMask(0x00); // disable writes for all bits
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     /* disable stencil test */
