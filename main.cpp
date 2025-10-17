@@ -85,32 +85,12 @@ void render()
     /* end query */
     glEndQuery(GL_SAMPLES_PASSED);
 
-    /* get query result */
-    GLint queryReady = 0;
-    int count = 1000; // counter to avoid a possible infinite loop
-    while (!queryReady && count--){ // block application to get query from gpu
-        glGetQueryObjectiv(OcclusionQuery, GL_QUERY_RESULT_AVAILABLE, &queryReady);
-    }
-
-    GLint samples = 0;
-    if (queryReady) {
-        glGetQueryObjectiv(OcclusionQuery, GL_QUERY_RESULT, &samples);
-        std::cout << "Samples visible: " << samples;
-    }
-    else {
-        std::cout << "Query not ready, rendering anyway";
-        samples = 1; // assume visible
-    }
-
-    /* render the actual rectangle only if it passed occlusion test */
-    if (samples > 0) {
-        std::cout << " -> RENDERING rectangle" << std::endl;
-        glUniform3f(glGetUniformLocation(Program, "uColor"), 0.8f, 0.4f, 0.0f);
-        glDrawArrays(GL_TRIANGLE_STRIP, 3, 4);
-    }
-    else {
-        std::cout << " -> SKIPPING rectangle (occluded)" << std::endl;
-    }
+    /* Conditional Rendering: GPU decides based on query result */
+    glBeginConditionalRender(OcclusionQuery, GL_QUERY_WAIT);
+    /* render actual rectangle */
+    glUniform3f(glGetUniformLocation(Program, "uColor"), 0.8f, 0.4f, 0.0f);
+    glDrawArrays(GL_TRIANGLE_STRIP, 3, 4);
+    glEndConditionalRender();
 }
 
 int main()
