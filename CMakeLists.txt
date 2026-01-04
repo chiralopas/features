@@ -11,7 +11,9 @@ set(SOURCES
 	LoadShaders.h
 	LoadShaders.cpp
 	triangle.vert
-	triangle.frag)
+	triangle.frag
+	screen.vert
+	screen.frag)
 	
 add_executable(${PROJECT_NAME} ${SOURCES})
 
