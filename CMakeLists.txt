@@ -10,8 +10,10 @@ set(SOURCES
 	main.cpp
 	LoadShaders.h
 	LoadShaders.cpp
-	triangle.vert
-	triangle.frag)
+	update.vert
+	render.vert
+	render.frag
+	)
 	
 add_executable(${PROJECT_NAME} ${SOURCES})
 
