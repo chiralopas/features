@@ -1,8 +1,11 @@
 #version 330 core
 
-layout (location = 0) out vec4 fColor;
+out vec4 fColor;
+in vec2 texCoord;
+
+uniform sampler2D uTexture;
 
 void main()
 {
-    fColor = vec4(0.5, 0.4, 0.8, 1.0);
+    fColor = texture(uTexture, texCoord);
 }
