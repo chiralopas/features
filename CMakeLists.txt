@@ -10,8 +10,8 @@ set(SOURCES
 	main.cpp
 	LoadShaders.h
 	LoadShaders.cpp
-	triangle.vert
-	triangle.frag)
+	cloud.vert
+	cloud.frag)
 	
 add_executable(${PROJECT_NAME} ${SOURCES})
 
@@ -20,6 +20,10 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${Stb_INCLUDE_DIR})
+find_path(LINMATH_INCLUDE_DIRS "linmath.h/linmath.h")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad::glad)
+target_include_directories(${PROJECT_NAME} PRIVATE 
+	${LINMATH_INCLUDE_DIRS} ${Stb_INCLUDE_DIR})
+
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+	glfw glad::glad)
