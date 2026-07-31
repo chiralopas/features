@@ -3,9 +3,10 @@
 out vec4 fColor;
 in vec2 texCoord;
 
-uniform sampler2D uTexture;
+uniform sampler2DArray uTexture;
+uniform int uSlice;
 
 void main()
 {
-    fColor = texture(uTexture, texCoord);
+    fColor = texture(uTexture, vec3(texCoord, uSlice));
 }

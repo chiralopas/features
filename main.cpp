@@ -10,15 +10,17 @@ GLuint VAOs[1];
 GLuint Buffers[1];
 GLuint Texture;
 GLuint Program;
+const int FrameCount = 4;
 
 // initialize the data
 void initialize()
 {
-    GLfloat triangle1[] = {
+    GLfloat quad[] = {
          //position   //texcoord
-        -0.5f,-0.5f,  0.0f, 0.0f,
-         0.0f, 0.5f,  0.5f, 1.0f,
-         0.5f,-0.5f,  1.0f, 0.0f
+        -0.5f, -0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  1.0f, 1.0f
     };
 
     glGenVertexArrays(1, VAOs);
@@ -27,7 +29,7 @@ void initialize()
     glBindVertexArray(VAOs[0]);
 
     glBindBuffer(GL_ARRAY_BUFFER, Buffers[0]);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle1), triangle1, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
     glEnableVertexAttribArray(0); //position
@@ -35,20 +37,33 @@ void initialize()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
     glEnableVertexAttribArray(1); //texcoord
 
-    /* setup texture */
+    /* setup array texture */
     glGenTextures(1, &Texture);
-    glBindTexture(GL_TEXTURE_2D, Texture);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, Texture);
+    
+    const char* framePaths[FrameCount] = {
+        "../res/attack_1.png",
+        "../res/attack_2.png",
+        "../res/attack_3.png",
+        "../res/attack_4.png"
+    };
 
-    /* load image data into texture */
-    int width, height, components;
-    stbi_set_flip_vertically_on_load(true); // opengl reads texture from bottom left
-    unsigned char *data = stbi_load("../brickwall.jpg", &width, &height, &components, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    int width, height, channels;
+    stbi_set_flip_vertically_on_load(true);
+    stbi_info(framePaths[0], &width, &height, &channels);
 
-    /* set texture parameters */
-    // filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, width, height, FrameCount,
+             0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    for (int i = 0; i < FrameCount; i++)
+    {
+        unsigned char* data = stbi_load(framePaths[i], &width, &height, &channels, 0);
+        glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1,
+            GL_RGBA, GL_UNSIGNED_BYTE, data);
+    }
+
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     ShaderInfo shaders[] =
     {
@@ -65,16 +80,18 @@ void initialize()
 void render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    /* bind texture to slot 0 */
+    int slice = int(glfwGetTime() * 4.0) % FrameCount;
+    glUniform1i(glGetUniformLocation(Program, "uSlice"), slice);
+
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, Texture);
-
-    /* sample texture in shader from slot 0 */
+    glBindTexture(GL_TEXTURE_2D_ARRAY, Texture);
     glUniform1i(glGetUniformLocation(Program, "uTexture"), 0);
 
     glBindVertexArray(VAOs[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 int main()
