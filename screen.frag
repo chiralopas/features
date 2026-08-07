@@ -3,14 +3,24 @@
 in vec2 texCoords;
 out vec4 fColor;
 
-/* sampling from texture unit 0 (default) */
-uniform sampler2D screenTexture;
+uniform sampler2D uScreenColor;
+uniform sampler2D uScreenDepth;
+
+float near = 0.1, far = 100.0;
+float fogStart = 3.5, fogEnd = 12.0;
+vec3 fogColor = vec3(0.7, 0.75, 0.8);
+
+
+float linearizeDepth(float d) 
+{
+    float z = d * 2.0 - 1.0;
+    return (2.0 * near * far) / (far + near - z * (far - near));
+}
 
 void main()
 {
-    fColor = texture(screenTexture, texCoords);
-
-    /* grayscale effect */
-    float average = (fColor.r + fColor.g + fColor.b) / 3.0f;
-    fColor = vec4(average, average, average, 1.0);
+    vec3 color = texture(uScreenColor, texCoords).rgb;
+    float dist = linearizeDepth(texture(uScreenDepth, texCoords).r);
+    float fogFactor = clamp((fogEnd - dist) / (fogEnd - fogStart), 0.0, 1.0);
+    fColor = vec4(mix(fogColor, color, fogFactor), 1.0);
 }
