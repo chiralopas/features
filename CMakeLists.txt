@@ -15,11 +15,18 @@ set(SOURCES
 	
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+add_executable(texbake tools/texbake.cpp)
+
 # adding packages
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(Stb REQUIRED)
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${Stb_INCLUDE_DIR})
+find_package(unofficial-libsquish CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad::glad)
+
+target_include_directories(texbake PRIVATE ${Stb_INCLUDE_DIR})
+target_link_libraries(texbake PRIVATE unofficial::libsquish::squish)
+
+add_custom_command(TARGET texbake POST_BUILD
+    COMMAND $<TARGET_FILE:texbake> ../grad4k.jpg ../grad4k.tex)

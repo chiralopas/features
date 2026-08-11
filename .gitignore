@@ -16,3 +16,4 @@ CMakeCache.txt
 *.pc
 /src/main.cpp.bak
 /build
+*.tex

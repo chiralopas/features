@@ -3,8 +3,10 @@
 #include <iostream>
 #include "LoadShaders.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+// GL_EXT_texture_compression_s3tc
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT 0x83F0
+
+#include "tools/tex_header.h"
 
 GLuint VAOs[1];
 GLuint Buffers[1];
@@ -39,12 +41,18 @@ void initialize()
     glGenTextures(1, &Texture);
     glBindTexture(GL_TEXTURE_2D, Texture);
 
-    /* load image data into texture */
-    int width, height, components;
-    stbi_set_flip_vertically_on_load(true); // opengl reads texture from bottom left
-    unsigned char *data = stbi_load("../brickwall.jpg", &width, &height, &components, 0);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    /* load data from compressed texture */
+    FILE* tf = fopen("../grad4k.tex", "rb");
+    tex_header hdr;
+    fread(&hdr, 1, sizeof(hdr), tf);
+    unsigned char* data = new unsigned char[hdr.size];
+    fread(data, 1, hdr.size, tf);
+    fclose(tf);
 
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+        hdr.width, hdr.height, 0, hdr.size, data);
+    delete[] data;
+    
     /* set texture parameters */
     // filtering parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
