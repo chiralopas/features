@@ -18,8 +18,5 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 # adding packages
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
-find_package(Stb REQUIRED)
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${Stb_INCLUDE_DIR})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw glad::glad)
